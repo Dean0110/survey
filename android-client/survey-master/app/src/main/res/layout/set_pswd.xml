@@ -10,7 +10,9 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+
     <TextView
+        android:id="@+id/set_pswd"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
@@ -57,10 +59,19 @@
         android:maxLength="4"
         android:backgroundTint="@color/colorPrimary"/>
 
-    <Space
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="4 digits at most"/>
+
+    <TextView
+        android:id="@+id/pswd_worn"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:textColor="@color/colorMiniHint"
+        android:gravity="center"/>
 
     <Button
         android:id="@+id/set_unlock_pswd"

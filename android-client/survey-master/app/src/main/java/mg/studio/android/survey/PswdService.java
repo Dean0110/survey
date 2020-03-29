@@ -7,10 +7,12 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class PswdService extends Service {
@@ -38,7 +40,7 @@ public class PswdService extends Service {
         }else{
             mLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         }
-       // mLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        // mLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 //        mLayoutParams.format = PixelFormat.RGBA_8888;
 //        mLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 //                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
@@ -52,6 +54,10 @@ public class PswdService extends Service {
         mView.findViewById(R.id.set_unlock_pswd).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+//                Display display = getWindowManager().getDefaultDisplay();
+//                int height = display.getHeight();
+
                 String pswd = ((EditText)mView.findViewById(R.id.fill_pswd)).getText().toString();
                 String cpswd = ((EditText)mView.findViewById(R.id.cf_pswd)).getText().toString();
                 if(pswd.length()==0){
@@ -61,7 +67,10 @@ public class PswdService extends Service {
                         public void run() {
                             Toast.makeText(getApplicationContext(),
                                     R.string.empty_pswd, Toast.LENGTH_LONG).show();
+                            TextView hint=mView.findViewById(R.id.pswd_worn);
+                            hint.setText("Please enter your password");
                         }
+
                     });
                     return;
                 }else if(cpswd.length()==0){
@@ -69,8 +78,13 @@ public class PswdService extends Service {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(),
-                                    R.string.empty_cf_pswd, Toast.LENGTH_LONG).show();
+                            Toast toast = Toast.makeText(getApplicationContext(),
+                                    R.string.empty_cf_pswd, Toast.LENGTH_LONG);
+                            toast.setGravity(Gravity.TOP,0,400);
+                            toast.show();
+
+                            TextView hint=mView.findViewById(R.id.pswd_worn);
+                            hint.setText("Please confirm your password");
                         }
                     });
                     return;
@@ -81,6 +95,8 @@ public class PswdService extends Service {
                         public void run() {
                             Toast.makeText(getApplicationContext(), R.string.cf_fail,
                                     Toast.LENGTH_LONG).show();
+                            TextView hint=mView.findViewById(R.id.pswd_worn);
+                            hint.setText("Passwords not match");
                         }
                     });
                     return;

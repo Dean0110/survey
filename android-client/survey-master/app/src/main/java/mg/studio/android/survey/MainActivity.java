@@ -67,21 +67,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // get camera permission
-    private void getCameraPermission() {
+    private boolean getCameraPermission() {
         if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.CAMERA) !=
-                PackageManager.PERMISSION_GRANTED) {
+                Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED)
+            return true;
+        else{
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.CAMERA
             }, 110);
+            if(ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.CAMERA) ==
+                    PackageManager.PERMISSION_GRANTED)
+                return true;
+            else
+                return false;
         }
     }
 
     // scan qr code
     private void scanQRCode() {
-        getCameraPermission();
-        Intent intent=new Intent(MainActivity.this,ScanActivity.class);
-        startActivityForResult(intent,2020);
+        if(!getCameraPermission()){
+            Toast.makeText(getApplicationContext(),"Camera permission is needed.",Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent intent = new Intent(MainActivity.this, ScanActivity.class);
+        startActivityForResult(intent, 2020);
     }
 
     // get text from qr code
@@ -90,12 +102,11 @@ public class MainActivity extends AppCompatActivity {
                                     @androidx.annotation.Nullable Intent data) {
         switch (requestCode) {
             case 2020:
-                if(data!=null) {
-                    surveyURL =data.getStringExtra("content");
-                    Log.i("传递成功的数据", "onActivityResult: "+surveyURL);
+                if (data != null) {
+                    surveyURL = data.getStringExtra("content");
+                    Log.i("传递成功的数据", "onActivityResult: " + surveyURL);
                     Toast.makeText(getApplicationContext(), R.string.get_data, Toast.LENGTH_LONG).show();
-                }
-                else {
+                } else {
                     Toast.makeText(getApplicationContext(), R.string.get_no_data, Toast.LENGTH_LONG).show();
                 }
 
@@ -111,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
         }
-            super.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     // analyse the question text
@@ -130,45 +141,47 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
     }
+
     //create a new thread and
     //get text content from internet
-    private void getTextContent(){
+    private void getTextContent() {
 
         getInternetPermission();
 
-        Vector<Thread> threadVector=new Vector<Thread>();
-        Thread childThread=new Thread(new Runnable() {
+        Vector<Thread> threadVector = new Vector<Thread>();
+        Thread childThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                HttpURLConnection conn=null;
-                BufferedReader reader=null;
-                try{
-                    URL url=new URL(surveyURL);
-                    conn= (HttpURLConnection) url.openConnection();
+                HttpURLConnection conn = null;
+                BufferedReader reader = null;
+                try {
+                    URL url = new URL(surveyURL);
+                    conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestMethod("GET");
                     conn.setConnectTimeout(4000);
                     conn.setReadTimeout(4000);
-                    InputStream in=conn.getInputStream();
+                    InputStream in = conn.getInputStream();
 
-                    reader=new BufferedReader(new InputStreamReader(in));
+                    reader = new BufferedReader(new InputStreamReader(in));
 
-                    StringBuilder builder=new StringBuilder();
+                    StringBuilder builder = new StringBuilder();
                     String line;
-                    while ((line=reader.readLine())!=null){
+                    while ((line = reader.readLine()) != null) {
                         builder.append(line);
                     }
-                    text=builder.toString();
-                    System.out.println("我的数据："+text);
-                }catch (Exception e){
+                    text = builder.toString();
+                    System.out.println("我的数据：" + text);
+                } catch (Exception e) {
                     e.printStackTrace();
-                }finally {
-                    if(reader!=null){
-                        try{
+                } finally {
+                    if (reader != null) {
+                        try {
                             reader.close();
-                        }catch (IOException e){
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    }if(conn!=null){
+                    }
+                    if (conn != null) {
                         conn.disconnect();
                     }
                 }
@@ -176,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
         });
         threadVector.add(childThread);
         childThread.start();
-        for(Thread thread:threadVector){
+        for (Thread thread : threadVector) {
             try {
                 thread.join();
             } catch (InterruptedException e) {
@@ -187,7 +200,6 @@ public class MainActivity extends AppCompatActivity {
 
     //request Internet
     private void getInternetPermission() {
-        Log.d("5555555","");
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.INTERNET) !=
                 PackageManager.PERMISSION_GRANTED) {
@@ -423,9 +435,16 @@ public class MainActivity extends AppCompatActivity {
         if (sp.getString("spswd", "").length() != 0) return;
 
         if (!Settings.canDrawOverlays(this)) {
-            startActivityForResult(new Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:" + getPackageName())), 0);
+            do {
+                startActivityForResult(new Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName())), 0);
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }while((!Settings.canDrawOverlays(this)));
         } else {
             startService(new Intent(this, PswdService.class));
         }
