@@ -12,6 +12,8 @@ import android.provider.Settings;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -35,6 +37,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private int qNum = 0; // number of questions
     private int qSeq = 0; // sequence
     private String surveyId;
+    private String createURL = "http://deepworm.xyz:8000/survey/create";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -419,6 +423,61 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //  To upload data to server
+    private void uploadAnswerToServer(){
+        JSONArray dataArray = new JSONArray();
+        final JSONObject uploadJSON = new JSONObject();
+        try{
+            uploadJSON.put("surveyId", surveyId);
+            uploadJSON.put("length", qNum);
+
+            for (int i = 0; i < qNum; i++)
+                dataArray.put(answers[i]);
+
+            uploadJSON.put("data", dataArray.toString());
+
+        }catch (JSONException je){
+            Toast.makeText(getApplicationContext(),R.string.gather_data_fail,Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Vector<Thread> threadVector = new Vector<Thread>();
+        Thread childThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HttpURLConnection conn = null;
+                try {
+                    URL url = new URL(surveyURL);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setDoOutput(true);
+                    conn.setRequestMethod("POST");
+                    conn.setConnectTimeout(4000);
+                    OutputStream out = conn.getOutputStream();
+
+                    out.write(uploadJSON.toString().getBytes());
+
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(),R.string.upload_fail,Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
+                }
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            }
+        });
+
+        threadVector.add(childThread);
+        childThread.start();
+        for (Thread thread : threadVector) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
     // start report activity
     public void onClickReport(View view) {
         Intent intent = new Intent(this, ReportActivity.class);
@@ -428,6 +487,9 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("data", jsonArray.toString());
         intent.putExtra("length", qNum);
         intent.putExtra("surveyId", surveyId);
+
+        uploadAnswerToServer();
+
         startActivity(intent);
     }
 
@@ -452,6 +514,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //  change all activities' language
     public void onClickLangChange(View view){
         String lang=getResources().getConfiguration().locale.getLanguage();
         if(lang.equals("zh")){
@@ -471,6 +534,51 @@ public class MainActivity extends AppCompatActivity {
             recreate();
         }
     }
+
+    public void enterCreatePage(View v){
+        setContentView(R.layout.activity_create);
+        WebView webv = (WebView)findViewById(R.id.web_create);
+        webv.setWebViewClient(new WebViewClient());
+        webv.getSettings().setJavaScriptEnabled(true);
+        webv.loadUrl(createURL);
+    }
+
+    public void backFromCreate(View v){
+        setContentView(R.layout.welcome);
+    }
+
+//    public void trry(View v){
+//        final String up= "{\"surveyId\":1, \"length\":3, \"data\":[\n" +
+//                "   {\"type\":\"radio\", \"question\":\"What's your gender?\", \"option\":{\"1\":\"male\"}},\n" +
+//                "   {\"type\":\"checkbox\", \"question\":\"What's your favorite food?\", \"option\":{\"1\":\"egg\", \"2\":\"eggplant\"}},\n" +
+//                "   {\"type\":\"text\", \"question\":\"what's your name?\", \"option\":{\"1\":\"Dean\"}}\n" +
+//                "]}\n" +
+//                "}";
+//
+//                HttpURLConnection conn = null;
+//                try {
+//                    URL url = new URL("http://deepworm.xyz:8000/survey/submitsurvey");
+//                    conn = (HttpURLConnection) url.openConnection();
+//                    conn.setRequestMethod("POST");
+//                    conn.setConnectTimeout(4000);
+//
+//                    conn.setRequestProperty("Content-type","application/x-www-form-urlencoded");
+//                    conn.setRequestProperty("Content-Length",String.valueOf(up.length()));
+//                    conn.setDoOutput(true);
+//                    OutputStream out = conn.getOutputStream();
+//
+//                    out.write(up.getBytes());
+//
+//                } catch (Exception e) {
+//                    Toast.makeText(getApplicationContext(),R.string.upload_fail,Toast.LENGTH_SHORT).show();
+//                    e.printStackTrace();
+//                }
+//                if (conn != null) {
+//                    conn.disconnect();
+//                }
+//    }
+
+
 }
 
 

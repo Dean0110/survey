@@ -12,7 +12,7 @@
     <string name="str_answer_hint">write your answer to here</string>
     <string name="str_thx">THANK YOU</string>
     <string name="str_thx_for">FOR YOUR ANSWERS!</string>
-    <string name="btn_finish">report</string>
+    <string name="btn_finish">REPORT</string>
     <string name="img_cd">Thank you for your answers.</string>
     <string name="accept_requests">Please accept our requests!</string>
     <string name="btn_exit">exit</string>
@@ -45,4 +45,7 @@
     <string name="new_ques_hint">NEW</string>
     <string name="scan_QR_hint">Scan to \nGet questionnaire</string>
     <string name="lang_config_text">English</string>
+    <string name="gather_data_fail">Gathering data failed</string>
+    <string name="upload_fail">Uploading data failed</string>
+    <string name="create_back">BACK</string>
 </resources>

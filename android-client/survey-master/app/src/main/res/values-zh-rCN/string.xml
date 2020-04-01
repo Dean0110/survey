@@ -45,5 +45,7 @@
     <string name="new_ques_hint">新问卷</string>
     <string name="scan_QR_hint">扫二维码\n获取问卷</string>
     <string name="lang_config_text">中文</string>
-
+    <string name="gather_data_fail">集合数据失败</string>
+    <string name="upload_fail">上传数据失败</string>
+    <string name="create_back">返回</string>
 </resources>
