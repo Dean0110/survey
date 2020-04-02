@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
                         builder.append(line);
                     }
                     text = builder.toString();
-                    System.out.println("我的数据：" + text);
+                    //System.out.println("我的数据：" + text);
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -434,12 +434,12 @@ public class MainActivity extends AppCompatActivity {
             String path = "http://deepworm.xyz:8000/survey/submitsurvey";
             URL url = new URL(path);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
+            conn.connect();
             conn.setRequestMethod("POST");
 
             conn.setConnectTimeout(5000);
 
-            String data = "content=" +json;
+            String data = "content=" + URLEncoder.encode(json, "utf-8");
             conn.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
             conn.setRequestProperty("Content-Length", data.length()+"");
 
@@ -598,10 +598,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.welcome);
     }
 
-	public void trry(View v){
+//	public void trry(View v){
 //        String json = "{\"surveyId\":19,\"length\":3,\"data\":[{\"type\":\"radio\",\"question\":\"What's your gender?\",\"option\":{\"1\":\"male\"}},{\"type\":\"checkbox\",\"question\":\"What smartphone brands do you like?\",\"option\":{\"1\":\"Huawei\",\"2\":\"Xiao Mi\"}},{\"type\":\"text\",\"question\":\"What do you care about most when buying a smartphone?\",\"option\":{\"1\":\"appearance\"}}]}";
 //		submitSurvey(json);
-	}
+//	}
 
 
 }
