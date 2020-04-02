@@ -9,9 +9,11 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.CheckBox;
@@ -34,12 +36,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Locale;
 import java.util.Vector;
 
@@ -422,6 +426,51 @@ public class MainActivity extends AppCompatActivity {
             je.printStackTrace();
         }
     }
+	
+	//Upload data
+	public static void submitSurvey(String json){
+        try {
+
+            String path = "http://deepworm.xyz:8000/survey/submitsurvey";
+            URL url = new URL(path);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+
+            conn.setConnectTimeout(5000);
+
+            String data = "content=" +json;
+            conn.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+            conn.setRequestProperty("Content-Length", data.length()+"");
+
+            //Toast.makeText(mainActivity,data,Toast.LENGTH_LONG).show();
+            conn.setDoOutput(true);
+            conn.getOutputStream().write(data.getBytes());
+ 
+            int code = conn.getResponseCode();
+            Log.i("code",""+code);
+            // System.out.println(code);
+            if (code==200) {
+
+                InputStream is = conn.getInputStream();
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                int len = -1;
+                byte[] buffer = new byte[1024];
+                while ((len = is.read(buffer)) != -1) {
+                    baos.write(buffer, 0, len);
+                }
+                is.close();
+
+                String result = baos.toString();
+                // System.out.println(result);
+                assert(result=="success");
+            }
+        } catch (Exception exc) {
+            // TODO: handle exception
+            Toast.makeText(mainActivity,R.string.upload_fail,Toast.LENGTH_SHORT).show();
+        }
+    }
 
     //  To upload data to server
     private void uploadAnswerToServer(){
@@ -434,14 +483,16 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < qNum; i++)
                 dataArray.put(answers[i]);
 
-            uploadJSON.put("data", dataArray.toString());
+            uploadJSON.put("data", dataArray);
 
         }catch (JSONException je){
             Toast.makeText(getApplicationContext(),R.string.gather_data_fail,Toast.LENGTH_SHORT).show();
             return;
         }
+		
+		submitSurvey(uploadJSON.toString());
 
-        Vector<Thread> threadVector = new Vector<Thread>();
+/*         Vector<Thread> threadVector = new Vector<Thread>();
         Thread childThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -474,7 +525,7 @@ public class MainActivity extends AppCompatActivity {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        } */
 
     }
 
@@ -547,36 +598,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.welcome);
     }
 
-//    public void trry(View v){
-//        final String up= "{\"surveyId\":1, \"length\":3, \"data\":[\n" +
-//                "   {\"type\":\"radio\", \"question\":\"What's your gender?\", \"option\":{\"1\":\"male\"}},\n" +
-//                "   {\"type\":\"checkbox\", \"question\":\"What's your favorite food?\", \"option\":{\"1\":\"egg\", \"2\":\"eggplant\"}},\n" +
-//                "   {\"type\":\"text\", \"question\":\"what's your name?\", \"option\":{\"1\":\"Dean\"}}\n" +
-//                "]}\n" +
-//                "}";
-//
-//                HttpURLConnection conn = null;
-//                try {
-//                    URL url = new URL("http://deepworm.xyz:8000/survey/submitsurvey");
-//                    conn = (HttpURLConnection) url.openConnection();
-//                    conn.setRequestMethod("POST");
-//                    conn.setConnectTimeout(4000);
-//
-//                    conn.setRequestProperty("Content-type","application/x-www-form-urlencoded");
-//                    conn.setRequestProperty("Content-Length",String.valueOf(up.length()));
-//                    conn.setDoOutput(true);
-//                    OutputStream out = conn.getOutputStream();
-//
-//                    out.write(up.getBytes());
-//
-//                } catch (Exception e) {
-//                    Toast.makeText(getApplicationContext(),R.string.upload_fail,Toast.LENGTH_SHORT).show();
-//                    e.printStackTrace();
-//                }
-//                if (conn != null) {
-//                    conn.disconnect();
-//                }
-//    }
+	public void trry(View v){
+//        String json = "{\"surveyId\":19,\"length\":3,\"data\":[{\"type\":\"radio\",\"question\":\"What's your gender?\",\"option\":{\"1\":\"male\"}},{\"type\":\"checkbox\",\"question\":\"What smartphone brands do you like?\",\"option\":{\"1\":\"Huawei\",\"2\":\"Xiao Mi\"}},{\"type\":\"text\",\"question\":\"What do you care about most when buying a smartphone?\",\"option\":{\"1\":\"appearance\"}}]}";
+//		submitSurvey(json);
+	}
 
 
 }
